@@ -1,20 +1,18 @@
-import http from "http";
-import express, { Request, Response } from "express";
-import bodyParser from "body-parser";
+import express from "express";
+import dotenv from "dotenv";
+import { auth } from "./api/services/auth";
+import authRoute from "./api/routes/auth";
 
-const port = 3000;
+dotenv.config();
+
 const app = express();
+const port = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(auth);
 
-app.get("/", async (_, res: Response) => {
-  res.status(200).json({
-    message: "Hello World",
-  });
-});
+app.use("/api/auth", authRoute);
 
-const server = http.createServer(app);
-server.listen(port, () => {
+app.listen(port, () => {
   console.log(`API started at http://localhost:${port}`);
 });
