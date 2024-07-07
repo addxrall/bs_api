@@ -8,5 +8,8 @@
     "skipLibCheck": true,
     "rootDir": "./src/",
     "sourceMap": true
-  }
+  },
+  "include": [
+    "src"
+  ]
 }

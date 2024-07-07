@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id             Int           @id @default(autoincrement())
+  username            String        @unique
+  email               String        @unique
+  password            String
+  profile_picture_url String?
+  bio                 String?
+  location            String?
+  created_at          DateTime      @default(now())
+  books               Book[]
+  reviews             Review[]
+  swapRequests        SwapRequest[] @relation("RequesterSwapRequests")
+  messagesSent        Message[]     @relation("SenderMessages")
+  messagesReceived    Message[]     @relation("ReceiverMessages")
+}
+
+model Book {
+  book_id      Int           @id @default(autoincrement())
+  user_id      Int
+  title        String
+  author       String
+  genre        String
+  condition    String
+  description  String?
+  image_url    String?
+  created_at   DateTime      @default(now())
+  user         User          @relation(fields: [user_id], references: [user_id])
+  swapRequests SwapRequest[]
+  reviews      Review[]
+}
+
+model SwapRequest {
+  swap_request_id Int      @id @default(autoincrement())
+  requester_id    Int
+  book_id         Int
+  status          String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  requester       User     @relation("RequesterSwapRequests", fields: [requester_id], references: [user_id])
+  book            Book     @relation(fields: [book_id], references: [book_id])
+}
+
+model Review {
+  review_id   Int      @id @default(autoincrement())
+  book_id     Int
+  reviewer_id Int
+  rating      Int
+  review_text String?
+  created_at  DateTime @default(now())
+  book        Book     @relation(fields: [book_id], references: [book_id])
+  reviewer    User     @relation(fields: [reviewer_id], references: [user_id])
+}
+
+model Message {
+  message_id  Int      @id @default(autoincrement())
+  sender_id   Int
+  receiver_id Int
+  content     String
+  sent_at     DateTime @default(now())
+  sender      User     @relation("SenderMessages", fields: [sender_id], references: [user_id])
+  receiver    User     @relation("ReceiverMessages", fields: [receiver_id], references: [user_id])
+}
