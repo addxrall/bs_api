@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { NextFunction, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import bcrypt from "bcrypt";
+import { AppError } from "../utils/appError";
 
 const prisma = new PrismaClient();
 const jwtKey = process.env.JWT;
@@ -9,13 +10,19 @@ const jwtKey = process.env.JWT;
 export const register = async (
   { username, email, password }: any,
   res: Response,
+  next: NextFunction,
 ) => {
   if (!username || !password || !email) {
-    throw new Error("No data");
+    return next(new AppError("No data", StatusCodes.INTERNAL_SERVER_ERROR));
   }
 
   if (!jwtKey) {
-    throw new Error("Failed to load jwt from server");
+    return next(
+      new AppError(
+        "Failed to load jwt from server",
+        StatusCodes.SERVICE_UNAVAILABLE,
+      ),
+    );
   }
 
   const userEmailDoesExist = await prisma.user.findUnique({
@@ -26,11 +33,13 @@ export const register = async (
   });
 
   if (userEmailDoesExist) {
-    throw new Error("Email is already in use");
+    return next(new AppError("Email is already in use", StatusCodes.CONFLICT));
   }
 
   if (existingUserUsername) {
-    throw new Error("Username is already in use");
+    return next(
+      new AppError("Username is already in use", StatusCodes.CONFLICT),
+    );
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);

@@ -11,7 +11,7 @@ router.post(
   "/register",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await register(req.body, res);
+      await register(req.body, res, next);
     } catch (error) {
       next(error);
     }

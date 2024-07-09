@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import authRoute from "./api/routes/auth.router";
 import cookieParser from "cookie-parser";
+import { errorHandler } from "./api/middleware/errorHandler";
 
 dotenv.config();
 
@@ -13,6 +14,8 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoute);
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`API started at http://localhost:${port}`);
