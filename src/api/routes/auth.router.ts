@@ -1,11 +1,7 @@
 import express, { NextFunction, Request, Response } from "express";
-import { register } from "../services/auth";
+import { login, logout, register } from "../services/auth";
 
 const router = express.Router();
-
-router.get("/", (req: Request, res: Response) => {
-  res.json({ message: "auth test" });
-});
 
 router.post(
   "/register",
@@ -17,5 +13,20 @@ router.post(
     }
   },
 );
+
+router.post(
+  "/login",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await login(req.body, res, next);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+router.post("/logout", async (_: Request, res: Response) => {
+  await logout(res);
+});
 
 export default router;

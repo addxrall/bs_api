@@ -14,7 +14,7 @@ export const register = async (
   next: NextFunction,
 ) => {
   if (!username || !password || !email) {
-    return next(new AppError("No data", StatusCodes.INTERNAL_SERVER_ERROR));
+    return next(new AppError("No data", StatusCodes.BAD_REQUEST));
   }
 
   if (!jwtKey) {
@@ -64,5 +64,76 @@ export const register = async (
     maxAge: 2 * 60 * 60 * 1000,
   });
 
-  res.send({ status: StatusCodes.CREATED, token });
+  res.status(StatusCodes.OK).json({ token });
 };
+
+export const login = async (
+  { email, password }: any,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (!email || !password) {
+    return next(new AppError("Empty credentials", StatusCodes.BAD_REQUEST));
+  }
+
+  if (!jwtKey) {
+    return next(
+      new AppError(
+        "Failed to load jwt from server",
+        StatusCodes.SERVICE_UNAVAILABLE,
+      ),
+    );
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return next(new AppError("Invalid Email", StatusCodes.BAD_REQUEST));
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+      return next(new AppError("Invalid Password", StatusCodes.BAD_REQUEST));
+    }
+
+    const token = jwt.sign(
+      { userId: user.user_id, email: user.email },
+      jwtKey,
+      {
+        expiresIn: "2h",
+      },
+    );
+
+    res.cookie("token", token, {
+      maxAge: 2 * 60 * 60 * 1000,
+    });
+
+    res.status(StatusCodes.OK).json({ token });
+  } catch (error) {
+    return next(
+      new AppError("Login failed", StatusCodes.INTERNAL_SERVER_ERROR),
+    );
+  }
+};
+
+export const logout = async (res: Response) => {
+  res.clearCookie("token");
+  res.status(StatusCodes.OK).json({ message: "Logout Successfull" });
+};
+
+// export const authenticate = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction,
+// ) => {
+//   const token = req.cookies.token;
+//
+//   if (!token)
+//     return next(new AppError("Unauthorized", StatusCodes.UNAUTHORIZED));
+//
+//   console.log(token);
+//
+//   next();
+// };
