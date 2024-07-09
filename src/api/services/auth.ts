@@ -3,6 +3,7 @@ import { NextFunction, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import bcrypt from "bcrypt";
 import { AppError } from "../utils/appError";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 const jwtKey = process.env.JWT;
@@ -51,5 +52,17 @@ export const register = async (
     },
   });
 
-  res.send({ status: StatusCodes.OK, user: newUser });
+  const token = jwt.sign(
+    { userId: newUser.user_id, email: newUser.email },
+    jwtKey,
+    {
+      expiresIn: "2h",
+    },
+  );
+
+  res.cookie("token", token, {
+    maxAge: 2 * 60 * 60 * 1000,
+  });
+
+  res.send({ status: StatusCodes.CREATED, token });
 };
