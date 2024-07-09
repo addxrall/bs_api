@@ -5,40 +5,50 @@ import { AppError } from "../utils/appError";
 
 const prisma = new PrismaClient();
 
-export const getUserById = async (
-  _: Request,
-  res: Response,
-  next: NextFunction,
-  id: number,
+const handleRequest = (
+  queryFunction: (id: number) => Promise<any>,
+  notFoundMessage: (id: number) => string,
 ) => {
-  const user = await prisma.user.findUnique({ where: { user_id: id } });
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const numericId = Number(id);
 
-  if (!user)
-    return next(
-      new AppError(`Cannot find user with id: ${id}`, StatusCodes.BAD_REQUEST),
-    );
-
-  res.status(StatusCodes.OK).json({ user });
+    try {
+      const result = await queryFunction(numericId);
+      if (!result || (Array.isArray(result) && result.length === 0)) {
+        return next(
+          new AppError(notFoundMessage(numericId), StatusCodes.BAD_REQUEST),
+        );
+      }
+      res.status(StatusCodes.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 };
 
-export const getUserBooks = async (
-  _: Request,
-  res: Response,
-  next: NextFunction,
-  id: number,
-) => {
-  const books = await prisma.book.findMany({ where: { user_id: id } });
+export const getUserById = handleRequest(
+  async (id: number) => {
+    const user = await prisma.user.findUnique({ where: { user_id: id } });
+    return user ? { user } : null;
+  },
+  (id: number) => `Cannot find user with id: ${id}`,
+);
 
-  res.status(StatusCodes.OK).json({ books });
-};
+export const getUserBooks = handleRequest(
+  async (id: number) => {
+    const books = await prisma.book.findMany({ where: { user_id: id } });
+    return { books };
+  },
+  (id: number) => `No books found for user with id: ${id}`,
+);
 
-export const getUserReviews = async (
-  _: Request,
-  res: Response,
-  next: NextFunction,
-  id: number,
-) => {
-  const reviews = await prisma.review.findMany({ where: { reviewer_id: id } });
-
-  res.status(StatusCodes.OK).json({ reviews });
-};
+export const getUserReviews = handleRequest(
+  async (id: number) => {
+    const reviews = await prisma.review.findMany({
+      where: { reviewer_id: id },
+    });
+    return { reviews };
+  },
+  (id: number) => `No reviews found for user with id: ${id}`,
+);

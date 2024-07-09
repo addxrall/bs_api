@@ -3,37 +3,26 @@ import { getUserBooks, getUserById, getUserReviews } from "../services/user";
 
 const router = express.Router();
 
-router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params;
-  try {
-    await getUserById(req, res, next, Number(id));
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get(
-  "/:id/books",
-  async (req: Request, res: Response, next: NextFunction) => {
+const handleUserRequest = (
+  serviceFunction: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+    id: number,
+  ) => Promise<void>,
+) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     try {
-      await getUserBooks(req, res, next, Number(id));
+      await serviceFunction(req, res, next, Number(id));
     } catch (error) {
       next(error);
     }
-  },
-);
+  };
+};
 
-router.get(
-  "/:id/reviews",
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
-    try {
-      await getUserReviews(req, res, next, Number(id));
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+router.get("/:id", handleUserRequest(getUserById));
+router.get("/:id/books", handleUserRequest(getUserBooks));
+router.get("/:id/reviews", handleUserRequest(getUserReviews));
 
 export default router;

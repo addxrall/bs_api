@@ -122,18 +122,3 @@ export const logout = async (res: Response) => {
   res.clearCookie("token");
   res.status(StatusCodes.OK).json({ message: "Logout Successfull" });
 };
-
-// export const authenticate = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction,
-// ) => {
-//   const token = req.cookies.token;
-//
-//   if (!token)
-//     return next(new AppError("Unauthorized", StatusCodes.UNAUTHORIZED));
-//
-//   console.log(token);
-//
-//   next();
-// };

@@ -3,28 +3,25 @@ import { login, logout, register } from "../services/auth";
 
 const router = express.Router();
 
-router.post(
-  "/register",
-  async (req: Request, res: Response, next: NextFunction) => {
+const handleAuthRequest = (
+  serviceFunction: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<void>,
+) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const data = req.body;
     try {
-      await register(req.body, res, next);
+      await serviceFunction(data, res, next);
     } catch (error) {
       next(error);
     }
-  },
-);
+  };
+};
 
-router.post(
-  "/login",
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await login(req.body, res, next);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
-
+router.post("/register", handleAuthRequest(register));
+router.post("/login", handleAuthRequest(login));
 router.post("/logout", async (_: Request, res: Response) => {
   await logout(res);
 });
