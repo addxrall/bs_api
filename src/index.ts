@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import authRoute from "./api/routes/auth.router";
+import userRoute from "./api/routes/user.router";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./api/middleware/errorHandler";
 import { authenticate } from "./api/middleware/authenticate";
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoute);
 app.use(authenticate);
+app.use("/api/user", userRoute);
 
 app.use(errorHandler);
 
