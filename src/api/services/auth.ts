@@ -52,8 +52,6 @@ export const register = async (
     },
   });
 
-  console.log(newUser, "new user");
-
   const token = jwt.sign(
     { user_id: newUser.user_id, email: newUser.email },
     jwtKey,
