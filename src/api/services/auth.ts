@@ -4,12 +4,13 @@ import { StatusCodes } from "http-status-codes";
 import bcrypt from "bcrypt";
 import { AppError } from "../utils/appError";
 import jwt from "jsonwebtoken";
+import { UserLoginData, UserRegisterData } from "../interfaces/user";
 
 const prisma = new PrismaClient();
 const jwtKey = process.env.JWT;
 
 export const register = async (
-  { username, email, password }: any,
+  { username, email, password }: UserRegisterData,
   res: Response,
   next: NextFunction,
 ) => {
@@ -68,7 +69,7 @@ export const register = async (
 };
 
 export const login = async (
-  { email, password }: any,
+  { email, password }: UserLoginData,
   res: Response,
   next: NextFunction,
 ) => {

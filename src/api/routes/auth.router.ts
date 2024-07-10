@@ -1,28 +1,25 @@
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import { login, logout, register } from "../services/auth";
 
 const router = express.Router();
 
-const handleAuthRequest = (
-  serviceFunction: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<void>,
-) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const data = req.body;
-    try {
-      await serviceFunction(data, res, next);
-    } catch (error) {
-      next(error);
-    }
-  };
-};
+router.post("/register", async (req, res, next) => {
+  try {
+    await register(req.body, res, next);
+  } catch (error) {
+    next(error);
+  }
+});
 
-router.post("/register", handleAuthRequest(register));
-router.post("/login", handleAuthRequest(login));
-router.post("/logout", async (_: Request, res: Response) => {
+router.post("/login", async (req, res, next) => {
+  try {
+    await login(req.body, res, next);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/logout", async (_, res) => {
   await logout(res);
 });
 
