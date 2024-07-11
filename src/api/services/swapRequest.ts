@@ -4,6 +4,7 @@ import { getUserIdFromToken } from "../utils/verifyToken";
 import { PrismaClient } from "@prisma/client";
 import { SWAP_STATUS } from "../interfaces";
 import { handleError } from "../utils/handleError";
+import { handleAsync } from "../utils";
 
 const prisma = new PrismaClient();
 
@@ -21,17 +22,13 @@ const getSwapRequest = async (requester_id: number, book_id: number) => {
   });
 };
 
-export const newSwapRequest = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const token = req.cookies.token;
-  const user_id = getUserIdFromToken(token);
-  const { book_id } = req.params;
-  const id = Number(book_id);
+export const newSwapRequest = handleAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies.token;
+    const user_id = getUserIdFromToken(token);
+    const { book_id } = req.params;
+    const id = Number(book_id);
 
-  try {
     if (!id)
       return handleError(next, "Specify book id", StatusCodes.BAD_REQUEST);
 
@@ -59,22 +56,16 @@ export const newSwapRequest = async (
     res
       .status(StatusCodes.CREATED)
       .json({ message: "New Swap Request was created" });
-  } catch (error) {
-    next(error);
-  }
-};
+  },
+);
 
-export const deleteSwapRequest = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const token = req.cookies.token;
-  const user_id = getUserIdFromToken(token);
-  const { swap_request_id } = req.params;
-  const id = Number(swap_request_id);
+export const deleteSwapRequest = handleAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies.token;
+    const user_id = getUserIdFromToken(token);
+    const { swap_request_id } = req.params;
+    const id = Number(swap_request_id);
 
-  try {
     const swapExists = await prisma.swapRequest.findFirst({
       where: {
         swap_request_id: id,
@@ -96,19 +87,14 @@ export const deleteSwapRequest = async (
     res
       .status(StatusCodes.OK)
       .json({ message: "Swap request deleted successfully" });
-  } catch (error) {
-    next(error);
-  }
-};
+  },
+);
 
-export const showUserSwapRequests = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const token = req.cookies.token;
-  const user_id = getUserIdFromToken(token);
-  try {
+export const showUserSwapRequests = handleAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies.token;
+    const user_id = getUserIdFromToken(token);
+
     const swapRequests = await prisma.swapRequest.findMany({
       where: {
         requester_id: user_id,
@@ -116,20 +102,14 @@ export const showUserSwapRequests = async (
     });
 
     res.status(StatusCodes.OK).json({ swapRequests });
-  } catch (error) {
-    next(error);
-  }
-};
+  },
+);
 
-export const declineSwapRequest = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const { swap_request_id } = req.params;
-  const request_id = Number(swap_request_id);
+export const declineSwapRequest = handleAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { swap_request_id } = req.params;
+    const request_id = Number(swap_request_id);
 
-  try {
     if (!request_id)
       return handleError(next, "No request id found", StatusCodes.NOT_FOUND);
 
@@ -147,22 +127,16 @@ export const declineSwapRequest = async (
     });
 
     res.status(StatusCodes.OK).json({ message: "Swap request declined" });
-  } catch (error) {
-    next(error);
-  }
-};
+  },
+);
 
-export const acceptSwapRequest = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const token = req.cookies.token;
-  const user_id = getUserIdFromToken(token);
-  const { swap_request_id } = req.params;
-  const request_id = Number(swap_request_id);
+export const acceptSwapRequest = handleAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies.token;
+    const user_id = getUserIdFromToken(token);
+    const { swap_request_id } = req.params;
+    const request_id = Number(swap_request_id);
 
-  try {
     if (!request_id)
       return handleError(next, "No request id found", StatusCodes.NOT_FOUND);
 
@@ -186,22 +160,16 @@ export const acceptSwapRequest = async (
     });
 
     res.status(StatusCodes.OK).json({ message: "Swap request accepted" });
-  } catch (error) {
-    next(error);
-  }
-};
+  },
+);
 
-export const cancelSwapRequest = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const token = req.cookies.token;
-  const user_id = getUserIdFromToken(token);
-  const { swap_request_id } = req.params;
-  const request_id = Number(swap_request_id);
+export const cancelSwapRequest = handleAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies.token;
+    const user_id = getUserIdFromToken(token);
+    const { swap_request_id } = req.params;
+    const request_id = Number(swap_request_id);
 
-  try {
     if (!request_id)
       return handleError(next, "No request id found", StatusCodes.NOT_FOUND);
 
@@ -225,7 +193,5 @@ export const cancelSwapRequest = async (
     });
 
     res.status(StatusCodes.OK).json({ message: "Swap request cancelled" });
-  } catch (error) {
-    next(error);
-  }
-};
+  },
+);
