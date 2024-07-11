@@ -17,7 +17,8 @@ model User {
   location            String?
   created_at          DateTime      @default(now())
   books               Book[]
-  reviews             Review[]
+  reviews_written     Review[]      @relation("Reviewer")
+  reviews_received    Review[]      @relation("ReviewedUser")
   swapRequests        SwapRequest[] @relation("RequesterSwapRequests")
   messagesSent        Message[]     @relation("SenderMessages")
   messagesReceived    Message[]     @relation("ReceiverMessages")
@@ -35,7 +36,6 @@ model Book {
   created_at   DateTime      @default(now())
   user         User          @relation(fields: [user_id], references: [user_id])
   swapRequests SwapRequest[]
-  reviews      Review[]
 }
 
 model SwapRequest {
@@ -50,14 +50,14 @@ model SwapRequest {
 }
 
 model Review {
-  review_id   Int      @id @default(autoincrement())
-  book_id     Int
-  reviewer_id Int
-  rating      Int
-  review_text String?
-  created_at  DateTime @default(now())
-  book        Book     @relation(fields: [book_id], references: [book_id])
-  reviewer    User     @relation(fields: [reviewer_id], references: [user_id])
+  review_id        Int      @id @default(autoincrement())
+  reviewed_user_id Int
+  reviewer_id      Int
+  rating           Int
+  review_text      String?
+  created_at       DateTime @default(now())
+  reviewed_user    User     @relation("ReviewedUser", fields: [reviewed_user_id], references: [user_id])
+  reviewer         User     @relation("Reviewer", fields: [reviewer_id], references: [user_id])
 }
 
 model Message {
