@@ -4,7 +4,7 @@ import { createAsyncMiddleware } from "../middleware/createAsyncMiddleware";
 
 const router = express.Router();
 
-router.post("/add", createAsyncMiddleware(addBook));
-router.delete("/:id/delete", createAsyncMiddleware(deleteBook));
+router.post("/new", createAsyncMiddleware(addBook));
+router.delete("/:book_id/delete", createAsyncMiddleware(deleteBook));
 
 export default router;
