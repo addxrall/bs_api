@@ -64,6 +64,63 @@ export const newSwapRequest = async (
   }
 };
 
+export const deleteSwapRequest = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const token = req.cookies.token;
+  const user_id = getUserIdFromToken(token);
+  const { swap_request_id } = req.params;
+  const id = Number(swap_request_id);
+
+  try {
+    const swapExists = await prisma.swapRequest.findFirst({
+      where: {
+        swap_request_id: id,
+        requester_id: user_id,
+      },
+    });
+
+    if (!swapExists)
+      return handleError(
+        next,
+        "This request doesn't exist or doesn't belong to this user",
+        StatusCodes.BAD_REQUEST,
+      );
+
+    await prisma.swapRequest.delete({
+      where: { swap_request_id: id },
+    });
+
+    res
+      .status(StatusCodes.OK)
+      .json({ message: "Swap request deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const showUserSwapRequests = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const token = req.cookies.token;
+  const user_id = getUserIdFromToken(token);
+  try {
+    const swapRequests = await prisma.swapRequest.findMany({
+      where: {
+        requester_id: user_id,
+      },
+    });
+
+    res.status(StatusCodes.OK).json({ swapRequests });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const declineSwapRequest = async (
   req: Request,
   res: Response,
