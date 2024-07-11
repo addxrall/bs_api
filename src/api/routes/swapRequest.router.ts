@@ -7,30 +7,27 @@ import {
   newSwapRequest,
   showUserSwapRequests,
 } from "../services/swapRequest";
+import { createAsyncMiddleware } from "../middleware/createAsyncMiddleware";
 
 const router = express.Router();
 
-const handleSwapRequest = (
-  serviceFunction: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<void>,
-) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await serviceFunction(req, res, next);
-    } catch (error) {
-      next(error);
-    }
-  };
-};
-
-router.get("/show", handleSwapRequest(showUserSwapRequests));
-router.post("/:book_id/new", handleSwapRequest(newSwapRequest));
-router.post("/:swap_request_id/delete", handleSwapRequest(deleteSwapRequest));
-router.post("/:swap_request_id/decline", handleSwapRequest(declineSwapRequest));
-router.post("/:swap_request_id/accept", handleSwapRequest(acceptSwapRequest));
-router.post("/:swap_request_id/cancel", handleSwapRequest(cancelSwapRequest));
+router.get("/show", createAsyncMiddleware(showUserSwapRequests));
+router.post("/:book_id/new", createAsyncMiddleware(newSwapRequest));
+router.post(
+  "/:swap_request_id/delete",
+  createAsyncMiddleware(deleteSwapRequest),
+);
+router.post(
+  "/:swap_request_id/decline",
+  createAsyncMiddleware(declineSwapRequest),
+);
+router.post(
+  "/:swap_request_id/accept",
+  createAsyncMiddleware(acceptSwapRequest),
+);
+router.post(
+  "/:swap_request_id/cancel",
+  createAsyncMiddleware(cancelSwapRequest),
+);
 
 export default router;

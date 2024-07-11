@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import {
   createReviewForUser,
   deleteUserReview,
@@ -6,29 +6,17 @@ import {
   showUserReviews,
   updateUserReview,
 } from "../services/review";
+import { createAsyncMiddleware } from "../middleware/createAsyncMiddleware";
 
 const router = express.Router();
 
-const handleReviewRequest = (
-  serviceFunction: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<void>,
-) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await serviceFunction(req, res, next);
-    } catch (error) {
-      next(error);
-    }
-  };
-};
-
-router.get("/:reviewed_user_id/show", handleReviewRequest(showReviews));
-router.get("/show", handleReviewRequest(showUserReviews));
-router.post("/:reviewed_user_id/new", handleReviewRequest(createReviewForUser));
-router.delete("/:review_id/delete", handleReviewRequest(deleteUserReview));
-router.put("/:review_id/edit", handleReviewRequest(updateUserReview));
+router.get("/:reviewed_user_id/show", createAsyncMiddleware(showReviews));
+router.get("/show", createAsyncMiddleware(showUserReviews));
+router.post(
+  "/:reviewed_user_id/new",
+  createAsyncMiddleware(createReviewForUser),
+);
+router.delete("/:review_id/delete", createAsyncMiddleware(deleteUserReview));
+router.put("/:review_id/edit", createAsyncMiddleware(updateUserReview));
 
 export default router;
