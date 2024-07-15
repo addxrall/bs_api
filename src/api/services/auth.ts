@@ -1,10 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import { NextFunction, Response } from "express";
+import { NextFunction, Response, Request } from "express";
 import { StatusCodes } from "http-status-codes";
 import bcrypt from "bcrypt";
 import { AppError } from "../utils/appError";
 import jwt from "jsonwebtoken";
 import { UserLoginData, UserRegisterData } from "../interfaces/user";
+import { getUserIdFromToken, handleError, verifyToken } from "../utils";
 
 const prisma = new PrismaClient();
 const jwtKey = process.env.JWT;
@@ -122,4 +123,27 @@ export const login = async (
 export const logout = async (res: Response) => {
   res.clearCookie("token");
   res.status(StatusCodes.OK).json({ message: "Logout Successfull" });
+};
+
+export const session = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.cookies.token;
+
+  if (!token)
+    return handleError(
+      next,
+      "Authentication token is missing",
+      StatusCodes.UNAUTHORIZED,
+    );
+
+  const user = verifyToken(token);
+
+  if (!user) {
+    return handleError(
+      next,
+      "Invalid or expired token",
+      StatusCodes.UNAUTHORIZED,
+    );
+  }
+
+  res.status(StatusCodes.OK).json(user);
 };
