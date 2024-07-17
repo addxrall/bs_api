@@ -128,21 +128,14 @@ export const logout = async (res: Response) => {
 export const session = (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies.token;
 
-  if (!token)
-    return handleError(
-      next,
-      "Authentication token is missing",
-      StatusCodes.UNAUTHORIZED,
-    );
+  if (!token) {
+    return res.status(StatusCodes.OK).json(null);
+  }
 
   const user = verifyToken(token);
 
   if (!user) {
-    return handleError(
-      next,
-      "Invalid or expired token",
-      StatusCodes.UNAUTHORIZED,
-    );
+    return res.status(StatusCodes.OK).json(null);
   }
 
   res.status(StatusCodes.OK).json(user);
