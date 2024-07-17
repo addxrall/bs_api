@@ -7,6 +7,28 @@ import { handleAsync, handleError } from "../utils";
 
 const prisma = new PrismaClient();
 
+export const getAllBooks = handleAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const books = await prisma.book.findMany();
+
+    res.status(StatusCodes.OK).json(books);
+  },
+);
+
+export const getBookById = handleAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const book = await prisma.book.findUnique({
+      where: { book_id: Number(id) },
+    });
+
+    if (!book)
+      return handleError(next, `Cannot find this book`, StatusCodes.NOT_FOUND);
+
+    res.status(StatusCodes.OK).json(book);
+  },
+);
+
 export const addBook = handleAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const bookData: NewBookData = req.body;
