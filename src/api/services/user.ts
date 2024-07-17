@@ -29,8 +29,18 @@ const handleRequest = (
 
 export const getUserById = handleRequest(
   async (id: number) => {
-    const user = await prisma.user.findUnique({ where: { user_id: id } });
-    return user ? { user } : null;
+    const user = await prisma.user.findUnique({
+      where: { user_id: id },
+      select: {
+        user_id: true,
+        username: true,
+        profile_picture_url: true,
+        bio: true,
+        location: true,
+        created_at: true,
+      },
+    });
+    return user || null;
   },
   (id: number) => `Cannot find user with id: ${id}`,
 );
